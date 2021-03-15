@@ -30,6 +30,7 @@ fn main() {
         let lexical_analyzer_instance = lexical_analyzer::LexicalAnalyzer::new(&contents);
 
         lexical_analyzer_instance.remove_comments();
+        lexical_analyzer_instance.compact_white_space();
     }
     
     if let Some(_) = matches.value_of("verbose") {

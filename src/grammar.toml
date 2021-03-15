@@ -1,1 +1,12 @@
-[expression]
+add = mul add'
+add' = ε
+add' = "+" mul add'
+add' = "-" mul add'
+
+mul = term mul'
+mul = ε
+mul' = "*" term mul'
+mul' = "/" term mul'
+
+term = <num>
+term = "(" add ")"
