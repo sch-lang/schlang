@@ -1,0 +1,8 @@
+[package]
+name = "sch_parser"
+version = "0.0.0"
+authors = ["Fredrik Stave <fredrik.stave@schibsted.com>"]
+edition = "2018"
+
+[dependencies]
+sch_lexer = { path = "../sch_lexer" }
