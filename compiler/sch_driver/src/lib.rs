@@ -1,16 +1,10 @@
+use clap::{App, Arg};
+use std::fs;
 use std::panic::{self, catch_unwind};
 use std::process::{self};
-use std::time::Instant;
 use tracing::debug;
-
-/* @FIX Local declarations to be moved later */
-// Useful type to use with `Result<>` indicate that an error has already
-// been reported to the user, so no need to continue checking.
-#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
-pub struct FatalErrorMarker;
-
-pub mod interface;
-/* End of local declarations */
+use sch_interface::{self, interface};
+use sch_symbol_table::{self, SymbolTable};
 
 /// Exit status code used for successful compilation and help output.
 pub const EXIT_SUCCESS: i32 = 0;
@@ -20,22 +14,44 @@ pub const EXIT_FAILURE: i32 = 1;
 
 pub struct RunCompiler {
     // @TODO keep track of the compiler state
+    buffer: Vec<char>,
+    symbol_table: SymbolTable
 }
 
 impl RunCompiler {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new(input: String) -> Self {
+        let mut buffer: Vec<char> = Vec::new();
+        
+        for byte in input.as_bytes().iter() {
+            buffer.push(*byte as char);
+        }
+
+        Self {
+            symbol_table: SymbolTable::new(),
+            buffer
+        }
     }
     pub fn run(self) -> interface::Result<()> {
-        run_compiler()
+        run_compiler(self.buffer, self.symbol_table)
     }
 }
 
 // @TODO implement the compilation logic
-fn run_compiler() -> interface::Result<()> {
-    debug!("Successfully ran the `run_compiler` function");
-    
-    // return Err(ErrorReported);
+fn run_compiler(buffer: Vec<char>, mut symbol_table: SymbolTable) -> interface::Result<()> {
+    // Run the lexer to get a token stream
+    let mut analyzer = sch_lexer::LexicalAnalyzer::new(buffer);
+
+    let id = symbol_table.add_entry(String::from("awesome"));
+    let entry = symbol_table.get_symbol(&id);
+
+    match entry {
+        Ok(e) => println!("{:?}", e),
+        Err(_) => println!("Error occured"),
+    }
+
+    println!("{:?}", analyzer.get_next_token());
+    println!("{:?}", analyzer.get_next_token());
+
     return Ok(());
 }
 
@@ -43,7 +59,7 @@ fn run_compiler() -> interface::Result<()> {
 pub fn set_sigpipe_handler() {
     unsafe {
         // Set the SIGPIPE signal handler, so that an EPIPE
-        // will cause rustc to terminate, as expected.
+        // will cause sch to terminate, as expected.
         assert_ne!(libc::signal(libc::SIGPIPE, libc::SIG_DFL), libc::SIG_ERR);
     }
 }
@@ -53,7 +69,7 @@ pub fn set_sigpipe_handler() {}
 
 pub fn catch_fatal_errors<F: FnOnce() -> R, R>(function: F) -> Result<R, interface::ErrorReported> {
     catch_unwind(panic::AssertUnwindSafe(function)).map_err(|value| {
-        if value.is::<FatalErrorMarker>() {
+        if value.is::<interface::FatalErrorMarker>() {
             interface::ErrorReported
         } else {
             panic::resume_unwind(value);
@@ -71,13 +87,33 @@ pub fn catch_with_exit_code(function: impl FnOnce() -> interface::Result<()>) ->
 }
 
 pub fn main() -> ! {
-    let start_time = Instant::now();
-    let exit_code = catch_with_exit_code(|| {
-        RunCompiler::new().run()
-    });
+    let matches = App::new("Schlang Compiler")
+    .version("1.0.0")
+    .author("Fredrik Stave <fredrik.stave@schibsted.com>")
+    .about("A compiler for the Schlang programming language")
+    .arg(
+        Arg::new("INPUT")
+            .about("Sets the input file for the compiler")
+            .required(true)
+            .index(1)
+    )
+    .arg(
+        Arg::new("verbose")
+            .about("Sets the level of verbosity")
+            .short('v')
+            .long("verbose")
+    )
+    .get_matches();
 
-    debug!("Started at: {:?}", start_time);
-    println!("Everything is ay okay!");
+    let exit_code = catch_with_exit_code(|| {
+        if let Some(input_file) = matches.value_of("INPUT") {
+            let contents = fs::read_to_string(input_file)
+                .expect("Could not read input file");
+            RunCompiler::new(contents).run()
+        } else {
+            Err(interface::ErrorReported)
+        }
+    });
 
     process::exit(exit_code);
 }

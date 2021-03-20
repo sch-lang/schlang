@@ -10,6 +10,10 @@ edition = "2018"
 #
 
 [dependencies]
+clap = "3.0.0-beta.2"
 libc = "0.2"
 tracing = "0.1"
 sch_ast = { path = "../sch_ast" }
+sch_lexer = { path = "../sch_lexer" }
+sch_interface = { path = "../sch_interface" }
+sch_symbol_table = { path = "../sch_symbol_table" }
