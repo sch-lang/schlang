@@ -1,0 +1,8 @@
+[package]
+name = "sch"
+version = "0.0.0"
+authors = ["Fredrik Stave <fredrik.stave@schibsted.com>"]
+edition = "2018"
+
+[dependencies]
+sch_driver = { path = "../sch_driver" }

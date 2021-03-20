@@ -1,0 +1,9 @@
+[package]
+name = "sch_symbol_table"
+version = "0.0.0"
+authors = ["Fredrik Stave <fredrik.stave@schibsted.com>"]
+edition = "2018"
+
+[dependencies]
+lazy_static = "1.4.0"
+sch_interface = { path = "../sch_interface" }

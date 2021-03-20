@@ -4,6 +4,9 @@ else
 use
 return
 strict
+class
+public
+local
 mut
 or
 is

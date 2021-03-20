@@ -1,0 +1,11 @@
+[package]
+name = "sch_lexer"
+version = "0.0.0"
+authors = ["Fredrik Stave <fredrik.stave@schibsted.com>"]
+edition = "2018"
+
+[dependencies]
+clap = "3.0.0-beta.2"
+regex = "1.4.4"
+bytes = "0.4.12"
+sch_symbol_table = { path = "../sch_symbol_table" }
