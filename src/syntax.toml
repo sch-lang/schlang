@@ -18,7 +18,9 @@ less
 [types]
 bool
 int
+sint
 string
+char
 float
 
 [operators]
